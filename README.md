@@ -6,7 +6,13 @@ This is a repository about my undergraduate thesis (University of Patras, Electr
 
 You can find the pdf of the thesis here: https://nemertes.lis.upatras.gr/jspui/handle/10889/14472
 
-The process is: 
+The general structure of the code is the following:
+1) Data Collection (EEG)
+2) Preprocessing (spatial filtering - CAR - / frequency filtering - bandpass -)
+3) Feature Extraction (compute various functional connectivity metrics)
+4) Classification (compute a score via Euclidean distance, define a threshold vector for decision making and find EER matrix)
+
+
 ## Data
 
 To download the data, go here: https://physionet.org/content/eegmmidb/1.0.0/
@@ -31,20 +37,12 @@ Some information about the functions that are beeing used:
 
 >eegfilt.m : Apply bandpass filter to seperate EEG data into specific bands.
 
->ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.
-
->FeatureVector.m : Extract feature vectors from the upper triangular connectivity matrix
-
->CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
-
->EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Calculate_FAR_FRR.m]
-
-From line 676 and below there are some prints to see the results.
-
-## Other Info
-
 Bands:
 delta band = [1-4 Hz], theta band = [4-8 Hz], alpha band = [8-13 Hz], beta band = [13-30 Hz], gamma band = [30-45 Hz]
+
+In line 75 of main_programm.m you can choose a flag  = 0 if you want to apply this process in the spatial filtered data (CAR), or choose a flag = 1 if you want to apply this process in the raw EEG data.
+
+>ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.
 
 Functional Connectivity (FC) Metrics:
 1) PLV (Phase Locking Value)
@@ -54,4 +52,12 @@ Functional Connectivity (FC) Metrics:
 5) AECc (AEC corrected version)
 6) COH (Spectral Coherence)
 
+>FeatureVector.m : Extract feature vectors from the upper triangular connectivity matrix
+
+>CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
+
+>EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Calculate_FAR_FRR.m]
+
 EER is the point of the ROC (Receiver Operating Characteristic) curve where FAR == FRR.
+
+From line 676 and below there are some prints to see the results.
