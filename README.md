@@ -11,3 +11,7 @@ To download the data, go here: https://physionet.org/content/eegmmidb/1.0.0/
 You want the data from every subject (S001-S109), and the first two runs (R01 = baseline run eyes open and R02 = baseline run eyes closed).
 
 Once the zip file is downloaded, you unzip it and put these files (only .edf, not .edf.event) in the same directory as the code, so you can read them properly.
+
+## Code
+
+The code is written in Matlab and is in the "code" directory. In the main_programm.m you will find everything you need with explanatory commenting.
