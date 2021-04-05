@@ -31,7 +31,7 @@ The code is written in Matlab and is in the "code" directory. In the main_progra
 
 Some information about the functions that are beeing used:
 
->import_eeg_data.m : Convert .edf (European Data Format) files to matrices.    [+edfread.m]
+>import_eeg_data.m : Convert .edf (European Data Format) files to matrices.    [edfread.m]
 
 >CAR.m : Apply CAR (Common Average Referencing) filter (spatial filter) to the raw EEG (ElectroEncephaloGraphy) data.
 
@@ -42,7 +42,7 @@ delta band = [1-4 Hz], theta band = [4-8 Hz], alpha band = [8-13 Hz], beta band 
 
 In line 75 of main_programm.m you can choose a flag  = 0 if you want to apply this process in the spatial filtered data (CAR), or choose a flag = 1 if you want to apply this process in the raw EEG data.
 
->ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.
+>ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.    [orthogonalization.m]
 
 Functional Connectivity (FC) Metrics:
 1) PLV (Phase Locking Value)
