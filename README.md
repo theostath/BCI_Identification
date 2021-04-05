@@ -22,11 +22,17 @@ The code is written in Matlab and is in the "code" directory. In the main_progra
 Some information about the functions that are beeing used:
 
 >import_eeg_data.m : Convert .edf (European Data Format) files to matrices.    [+edfread.m]
+
 >CAR.m : Apply CAR (Common Average Referencing) filter (spatial filter) to the raw EEG (ElectroEncephaloGraphy) data.
+
 >eegfilt.m : Apply bandpass filter to seperate EEG data into specific bands.
+
 >ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.
+
 >FeatureVector.m : Extract feature vectors from the upper triangular connectivity matrix
+
 >CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
+
 >EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Calculate_FAR_FRR.m]
 
 From line 676 and below there are some prints to see the results.
