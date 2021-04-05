@@ -19,13 +19,15 @@ Once the zip file is downloaded, you unzip it and put these files (only .edf, no
 
 The code is written in Matlab and is in the "code" directory. In the main_programm.m you will find everything you need with explanatory commenting.
 
->import_eeg_data.m : Convert .edf (European Data Format) files to matrices.
+Some information about the functions that are beeing used:
+
+>import_eeg_data.m : Convert .edf (European Data Format) files to matrices.    [+edfread.m]
 >CAR.m : Apply CAR (Common Average Referencing) filter (spatial filter) to the raw EEG (ElectroEncephaloGraphy) data.
 >eegfilt.m : Apply bandpass filter to seperate EEG data into specific bands.
 >ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.
 >FeatureVector.m : Extract feature vectors from the upper triangular connectivity matrix
 >CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
->EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.
+>EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Calculate_FAR_FRR.m]
 
 From line 676 and below there are some prints to see the results.
 
@@ -41,3 +43,5 @@ Functional Connectivity (FC) Metrics:
 4) AEC (Amplitude Envelope Correlation)
 5) AECc (AEC corrected version)
 6) COH (Spectral Coherence)
+
+EER is the point of the ROC (Receiver Operating Characteristic) curve where FAR == FRR.
