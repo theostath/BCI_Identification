@@ -56,7 +56,7 @@ Functional Connectivity (FC) Metrics:
 
 >CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
 
->EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Calculate_FAR_FRR.m]
+>EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Genuine_Impostor_Scores.m and Calculate_FAR_FRR.m]
 
 EER is the point of the ROC (Receiver Operating Characteristic) curve where FAR == FRR.
 
