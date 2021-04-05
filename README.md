@@ -65,30 +65,39 @@ From line 676 and below there are some prints to see the results.
 ## Examples (Images)
 
 1) Raw EEG data from all 64 channels from subject 1 during the baseline run with eyes open. The duration here is 12 seconds.
+
 ![image](https://user-images.githubusercontent.com/24894934/113600967-6c60e300-9649-11eb-93a7-73ab7ed388b6.png)
 
 2) Zoom in to see the data from 1 channel.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601150-a3cf8f80-9649-11eb-9744-c215f09685be.png)
 
 3) After preprocessing, you can see the same data filtered in delta band [1-4 Hz].
+
 ![image](https://user-images.githubusercontent.com/24894934/113601263-c5307b80-9649-11eb-91bf-1739200fb92d.png)
 
 4) Functional connectivity matrix for the PLV metric. It is from subject 1, in alpha band, during the baseline run with eyes closed.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601365-e5603a80-9649-11eb-9d20-2f8ce0a3be59.png)
 
 5) Extracting the feature vector from the upper triangular matrix of the last photo.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601501-16d90600-964a-11eb-8e51-375016add299.png)
 
 6) Score matrix for PLV metric in alpha band. This includes scores for 5 epochs, 109 subjects and 2 tasks (eyes open, eyes closed).
+
 ![image](https://user-images.githubusercontent.com/24894934/113601575-2fe1b700-964a-11eb-9b8d-31b5ee82119e.png)
 
 7) Example of FAR and FRR values depending on the threshold value.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601715-5e5f9200-964a-11eb-84f0-6781a0fbb2d8.png)
 
 8) Example of a ROC curve.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601794-759e7f80-964a-11eb-8144-68fff6a95586.png)
 
 9) Finally, example of an EER matrix. The value 0 is the best for EER.
+
 ![image](https://user-images.githubusercontent.com/24894934/113601824-83ec9b80-964a-11eb-9af3-40281636081b.png)
 
 
