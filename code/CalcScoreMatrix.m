@@ -1,7 +1,7 @@
 function [ScoreMat] = CalcScoreMatrix(FCprofile_EO,FCprofile_EC,Ns,T,epoch)
 
-% Calculate score matrix, where similarity scores = 1/(1+d), and d
-% represents Euclidian distance.
+% Calculate the score matrix, where similarity scores = 1 / (1 + d), and
+% d is the Euclidean (L2) distance.
 %
 % dimensions of score matrix: runs * epochs * subjects (2 * 5 * 109)
 %
@@ -63,28 +63,25 @@ for i=1:dim
                     
             % case1: Task1 vs Task1 (EO vs EO)
             if ((i<=dim/2) && (j<=dim/2))
-                prod1 = (x_EO-y_EO).*(x_EO-y_EO); % product (ginomeno)
-                Euclidian1 = sum(sqrt(prod1));
+                euclidean1 = sqrt(sum((x_EO - y_EO) .^ 2));
                    
                 
-                ScoreMat(i,j) = 1/(1+Euclidian1) ;
-                ScoreMat(j,i) = 1/(1+Euclidian1) ; % symmetric matrix
+                ScoreMat(i,j) = 1/(1+euclidean1) ;
+                ScoreMat(j,i) = 1/(1+euclidean1) ; % symmetric matrix
 
             % case3: Task2 vs Task2 (EC vs EC)
             elseif((i>dim/2) && (j>dim/2))
-                prod3 = (x_EC-y_EC).*(x_EC-y_EC);
-                Euclidian3 = sum(sqrt(prod3));
+                euclidean3 = sqrt(sum((x_EC - y_EC) .^ 2));
                 
-                ScoreMat(i,j) = 1/(1+Euclidian3) ;
-                ScoreMat(j,i) = 1/(1+Euclidian3) ; % symmetric matrix
+                ScoreMat(i,j) = 1/(1+euclidean3) ;
+                ScoreMat(j,i) = 1/(1+euclidean3) ; % symmetric matrix
             
             % case2: Task1 vs Task2 (EO vs EC)
             else
-                prod2 = (x_EO-y_EC).*(x_EO-y_EC);
-                Euclidian2 = sum(sqrt(prod2));
+                euclidean2 = sqrt(sum((x_EO - y_EC) .^ 2));
                 
-                ScoreMat(i,j) = 1/(1+Euclidian2) ;
-                ScoreMat(j,i) = 1/(1+Euclidian2) ;
+                ScoreMat(i,j) = 1/(1+euclidean2) ;
+                ScoreMat(j,i) = 1/(1+euclidean2) ;
             end        
         end
     end

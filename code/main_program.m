@@ -1,69 +1,69 @@
 % Thesis: Biometric system using EEG data
 % Name: Theodoros - Panagiotis Stathakopoulos
-% AM: 1047043
 % University of Patras, Department of Electrical and Computer Engineering
-% 17/04/2020 (start date)
-% 20/05/2020 (current date)
 
-% To programma tha veltiwnotan aisthita an ekana parallhlopoihsh, efoson
-% yparxoyn panomoiotipes ergasies pou mporoun na ylopoiountai taftoxrona.
+clear;
+clc;
+
+%% Configuration
+% Update these values to switch between a fast smoke test and the full
+% experiment.
+script_dir = fileparts(mfilename('fullpath'));
+data_dir = script_dir; % Default: EDF files live next to the MATLAB code.
+
+Nch = 64; % Number of EEG channels
+Fs = 160; % Sampling rate (Hz)
+T = 60; % Signal duration (sec)
+Ns = 109; % Number of subjects
+epoch = 12; % Non-overlapping epoch duration (sec)
+
+use_car = true;
+enable_plots = true;
+enable_optional_distribution_plot = false;
+
+if mod(T, epoch) ~= 0
+    error('main_program:InvalidEpoch', ...
+        'The signal duration T must be divisible by epoch.');
+end
 
 %% -- STEP 1: READ THE DATA --
-% 64 Channels, 160 Hz, 1 minute duration, 109 subjects, 2 baseline ...
-... recordings (eyes open/closed)
+% 64 channels, 160 Hz, 1 minute duration, 109 subjects, 2 baseline
+% recordings (eyes open / eyes closed)
+[raw_dataEO,raw_dataEC] = import_eeg_data(Ns, Nch, Fs, T, data_dir);
 
-Nch = 64; % Number of channels
-Fs = 160 ; % Sampling rate
-T = 60 ; % time duration (sec)
-Ns = 109; % Number of subjects
+%% Plot raw EEG data of the 1st subject.
+if enable_plots
+    figure();
+    t = 0:1/Fs:1; % Time vector with 1 second duration.
 
-% All .edf files must be in the same directory (folder) as the code in
-% order to work.
-[raw_dataEO,raw_dataEC] = import_eeg_data(Ns,Nch,Fs,T); % EO = Eyes Open, EC = Eyes Closed
+    subplot(3,1,1);
+    s1 = raw_dataEC(1,1:161,1);
+    plot(t,s1);
 
-%% This section is for ploting eeg data of the 1st subject (raw data).
-% plot eeg data without function eegplot(eeg_data)
-figure()
-t=0:1/Fs:1; % time vector (length 1 sec)
+    subplot(3,1,2);
+    s2 = raw_dataEC(2,1:161,1);
+    plot(t,s2);
 
-subplot(3,1,1);
-s1 = raw_dataEC(1,1:161,1); % ta dedomena tou 1ou kanaliou, tou 1ou atomou, gia 1 sec
-plot(t,s1);
+    subplot(3,1,3);
+    s3 = raw_dataEC(3,1:161,1);
+    plot(t,s3);
 
-subplot(3,1,2);
-s2 = raw_dataEC(2,1:161,1); % ta dedomena tou 2ou kanaliou, tou 1ou atomou, gia 1 sec
-plot(t,s2);
+    xlabel('Time (seconds)');
+    ylabel('Amplitude (?V)');
+    title('EEG signals (raw data from 3 channels)');
 
-subplot(3,1,3);
-s3 = raw_dataEC(3,1:161,1); % ta dedomena tou 3ou kanaliou, tou 1ou atomou, gia 1 sec
-plot(t,s3);
+    eegplot(raw_dataEO(:,:,1), 'winlength', 12, ...
+        'plottitle', 'Raw EEG data of subject No 1 (all channels)');
+end
 
-xlabel('Time (seconds)');
-ylabel('Amplitude (?V)');
-title('EEG signals (raw data from 3 channels)');
-
-%% plot eeg data with function eegplot(eeg_data)
-% for all channels
-eegplot(raw_dataEO(:,:,1), 'winlength', 12, 'plottitle', 'Raw EEG data of subject No 1 (all channels)');  % window length = 12 seconds --> 1 epoch
-
-% for the 1st channel only
-%eegplot(raw_dataEO(1,:,1), 'winlength', 12, 'plottitle', 'Raw EEG data of subject No 1 (channel No 1)');  % window length = 12 seconds --> 1 epoch
-
-%% -- STEP 2a (PREPROCESSING): CAR (Common Average Referncing) - Spatial Filtering --
-
-% Comment: Eite efarmozw CAR prin to filtrarisma stis syxnothtes eite meta, ta
-% apotelesmata den allazoyn.
-
+%% -- STEP 2a (PREPROCESSING): CAR (Common Average Referencing) --
 [CAR_EO,CAR_EC] = CAR(raw_dataEO,raw_dataEC);
 
-%% This section is for ploting eeg data of the 1st subject (with CAR).
-
-% for all channels
-eegplot(CAR_EO(:,:,1), 'winlength', 12, 'plottitle', 'Raw EEG data of subject No 1 (all channels) - With CAR');  % window length = 12 seconds --> 1 epoch
-
-% for the 1st channel only
-%eegplot(CAR_EO(1,:,1), 'winlength', 12, 'plottitle', 'Raw EEG data of subject No 1 (channel No 1) - With CAR');  % window length = 12 seconds --> 1 epoch
-
+%% Plot CAR-filtered EEG data of the 1st subject.
+if enable_plots
+    eegplot(CAR_EO(:,:,1), 'winlength', 12, ...
+        'plottitle', 'Raw EEG data of subject No 1 (all channels) - With CAR');
+end
 
 %% -- STEP 2b (PREPROCESSING): BANDPASS FILTERING --
 % Delta band: 1-4 Hz
@@ -72,9 +72,7 @@ eegplot(CAR_EO(:,:,1), 'winlength', 12, 'plottitle', 'Raw EEG data of subject No
 % Beta band: 13-30 Hz
 % Gamma band: 30-45 Hz
 
-flag = 0; % flag = 0 => With CAR    _    flag = 1 => Without CAR
-
-%Initialize matrices.
+% Initialize matrices.
 
 filtered_dataEO_delta = zeros(Nch,Fs*T,Ns) ;
 filtered_dataEC_delta = zeros(Nch,Fs*T,Ns) ;
@@ -96,7 +94,7 @@ filtered_dataEC_gamma = zeros(Nch,Fs*T,Ns) ;
 
 for i=1:Ns
 % With CAR
-    if (flag == 0)
+    if use_car
         % Delta band
         filtered_dataEO_delta(:,:,i) = eegfilt(CAR_EO(:,:,i), Fs, 1, 4, 0, 0, 0, 'fir1', 0); % eyes open
         filtered_dataEC_delta(:,:,i) = eegfilt(CAR_EC(:,:,i), Fs, 1, 4, 0, 0, 0, 'fir1', 0); % eyes closed
@@ -141,20 +139,14 @@ for i=1:Ns
     end
 end
 
-%% This section is for ploting eeg data of the 1st subject (raw data) after filtering.
+%% Plot the filtered EEG data of the 1st subject.
+if enable_plots
+    eegplot(filtered_dataEO_delta(:,:,1), 'winlength', 12, ...
+        'plottitle', 'EEG data of subject No 1 (all channels) - Delta band');
+end
 
-% for all channels
-eegplot(filtered_dataEO_delta(:,:,1), 'winlength', 12, 'plottitle', 'EEG data of subject No 1 (all channels) - Delta band');  % window length = 12 seconds 
-
-% for the 1st channel only
-%eegplot(filtered_dataEO_gamma(:,:,1), 'winlength', 3, 'plottitle', 'EEG data of subject No 1 (channel No 1) - Gamma band');  % window length = 3 seconds
-
-%% -- STEP 3 (EPOCHS): XWRIZW TA DEDOMENA SE 5 MH EPIKALYPTOMENES EPOXES TWN 12 SEC --
-
-% 12 sec: 160 samples/sec * 12 sec = 1920 samples
-
-epoch = 12; % epoch length ( sec )
-EpSam = Fs*epoch; % epoch length ( in samples )
+%% -- STEP 3 (EPOCHS): SPLIT THE DATA INTO 5 NON-OVERLAPPING 12-SECOND EPOCHS --
+EpSam = Fs*epoch; % Epoch length in samples.
 
 %Initialize matrices.
 
@@ -385,13 +377,15 @@ for i=1:Ns
     end
 end
 
-%% This section is for plotting Connectivity Matrices.
-
-imagesc(CONN_PLV_EC_alpha(:,:,1,1));
-colorbar
-title('Functional Connectivity Matrix: PLV, Eyes Closed, alpha band');
-xlabel('Number of channels');
-ylabel('Number of channels');
+%% Plot a sample connectivity matrix.
+if enable_plots
+    figure();
+    imagesc(CONN_PLV_EC_alpha(:,:,1,1));
+    colorbar
+    title('Functional Connectivity Matrix: PLV, Eyes Closed, alpha band');
+    xlabel('Number of channels');
+    ylabel('Number of channels');
+end
 
 %% -- STEP 5: FUNCTIONAL CONNECTIVITY PROFILES (feature vectors) --
 
@@ -563,15 +557,16 @@ for i=1:Ns
     end
 end
 
-%% This section is for plotting Functional Connectivity Profile (feature vector).
-
-figure();
-plot(FCprofile_PLV_EC_alpha(:,1,1),'LineWidth', 0.75);
-title('Feature Vector: PLV, Eyes Closed, alpha band');
-xlabel('Number of features');
-ylabel('PLV values');
-xlim([0 Nch*(Nch-1)/2]);
-ylim([0 1]); % an eixa COR tha evaza oria [-1 1]
+%% Plot a sample feature vector.
+if enable_plots
+    figure();
+    plot(FCprofile_PLV_EC_alpha(:,1,1),'LineWidth', 0.75);
+    title('Feature Vector: PLV, Eyes Closed, alpha band');
+    xlabel('Number of features');
+    ylabel('PLV values');
+    xlim([0 Nch*(Nch-1)/2]);
+    ylim([0 1]); % For COR the range would be [-1, 1].
+end
 
 %% -- STEP 6: CALCULATE SCORE MATRIX (similarity matrix) --
 
@@ -616,18 +611,24 @@ ScoreMat_AEC_gamma = CalcScoreMatrix(FCprofile_AEC_EO_gamma,FCprofile_AEC_EC_gam
 ScoreMat_AECc_gamma = CalcScoreMatrix(FCprofile_AECc_EO_gamma,FCprofile_AECc_EC_gamma,Ns,T,epoch);
 ScoreMat_COH_gamma = CalcScoreMatrix(FCprofile_COH_EO_gamma,FCprofile_COH_EC_gamma,Ns,T,epoch);
 
-%% This section is for plotting Score Matrix.
+%% Plot a sample score matrix.
+if enable_plots
+    figure();
+    imagesc(ScoreMat_PLV_alpha);
+    colorbar
+    title('Score Matrix (PLV, Alpha band)');
+end
 
-figure();
-imagesc(ScoreMat_PLV_alpha);
-colorbar
-title('Score Matrix (PLV, Alpha band)');
-
-%% This section is for plotting a logical matrix, where cell value == 1 is for
-%  genuine scores and cell value == 0 is for impostor scores.
-
-% e.g. for ScoreMat_PLV_alpha
-PlotDistributionOfGenuineImpScores(ScoreMat_PLV_alpha,T,epoch,Ns)
+%% Plot the genuine / impostor score distribution if the helper exists.
+if enable_plots && enable_optional_distribution_plot
+    if exist('PlotDistributionOfGenuineImpScores', 'file') == 2
+        PlotDistributionOfGenuineImpScores(ScoreMat_PLV_alpha, T, epoch, Ns);
+    else
+        warning('main_program:MissingPlotHelper', ...
+            ['PlotDistributionOfGenuineImpScores.m was not found. ' ...
+             'Skipping the optional distribution plot.']);
+    end
+end
 
 %% -- STEP 7: CALCULATE EER MATRIX --
 % BT: Between-Tasks
@@ -674,249 +675,235 @@ PlotDistributionOfGenuineImpScores(ScoreMat_PLV_alpha,T,epoch,Ns)
 [EER_COH_gamma,FAR_COH_EO_gamma,FRR_COH_EO_gamma,FAR_COH_EC_gamma,FRR_COH_EC_gamma,FAR_COH_BT_gamma,FRR_COH_BT_gamma,AUC_COH_gamma] = EERMatrix(ScoreMat_COH_gamma,T,Ns,epoch);
 
 %% -- Plotting the final results. --
-% Edw exw valei endeiktika kapoia plot gia ROC curves (EO - EC) kai EER
-% matrices. Allazw tous pinakes analoga me to ti thelw na kanw plot kathe
-% fora.
+if enable_plots
+    % PLV metric
+    figure();
+    plot(FAR_PLV_EO_beta,FRR_PLV_EO_beta)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (PLV, Beta band)');
 
-% Exw kai thn entolh area pou kanei paint thn perioxh under the curve, an
-% thelw.
+    figure();
+    plot(FAR_PLV_EC_alpha,FRR_PLV_EC_alpha)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (PLV, Alpha band)');
 
-% PLV metric
-figure();
-plot(FAR_PLV_EO_beta,FRR_PLV_EO_beta)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (PLV, Beta band)');
+    figure();
+    imagesc(EER_PLV_alpha)
+    colorbar;
+    title('EER matrix (PLV, Alpha band)');
 
-figure();
-plot(FAR_PLV_EC_alpha,FRR_PLV_EC_alpha)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (PLV, Alpha band)');
+    % PLI metric
+    figure();
+    plot(FAR_PLI_EO_gamma,FRR_PLI_EO_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (PLI, Gamma band)');
 
-figure();
-imagesc(EER_PLV_alpha)
-colorbar;
-title('EER matrix (PLV, Alpha band)');
+    figure();
+    plot(FAR_PLI_EC_gamma,FRR_PLI_EC_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (PLI, Gamma band)');
 
-% PLI metric
-figure();
-plot(FAR_PLI_EO_gamma,FRR_PLI_EO_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (PLI, Gamma band)');
+    figure();
+    imagesc(EER_PLI_gamma)
+    title('EER matrix (PLI, Gamma band)');
 
-figure();
-plot(FAR_PLI_EC_gamma,FRR_PLI_EC_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (PLI, Gamma band)');
+    % COR metric
+    figure();
+    plot(FAR_COR_EO_gamma,FRR_COR_EO_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (COR, Gamma band)');
 
-figure();
-imagesc(EER_PLI_gamma)
-title('EER matrix (PLI, Gamma band)');
+    figure();
+    plot(FAR_COR_EC_gamma,FRR_COR_EC_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (COR, Gamma band)');
 
-% COR metric
-figure();
-plot(FAR_COR_EO_gamma,FRR_COR_EO_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (COR, Gamma band)');
+    figure();
+    imagesc(EER_COR_gamma)
+    title('EER matrix (COR, Gamma band)');
 
-figure();
-plot(FAR_COR_EC_gamma,FRR_COR_EC_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (COR, Gamma band)');
+    % AEC metric
+    figure();
+    plot(FAR_AEC_EO_gamma,FRR_AEC_EO_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (AEC, Gamma band)');
 
-figure();
-imagesc(EER_COR_gamma)
-title('EER matrix (COR, Gamma band)');
+    figure();
+    plot(FAR_AEC_EC_gamma,FRR_AEC_EC_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (AEC, Gamma band)');
 
-% AEC metric
-figure();
-plot(FAR_AEC_EO_gamma,FRR_AEC_EO_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (AEC, Gamma band)');
+    figure();
+    imagesc(EER_AEC_gamma)
+    title('EER matrix (AEC, Gamma band)');
 
-figure();
-plot(FAR_AEC_EC_gamma,FRR_AEC_EC_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (AEC, Gamma band)');
+    % AECc metric
+    figure();
+    plot(FAR_AECc_EO_gamma,FRR_AECc_EO_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (AECc, Gamma band)');
 
-figure();
-imagesc(EER_AEC_gamma)
-title('EER matrix (AEC, Gamma band)');
+    figure();
+    plot(FAR_AECc_EC_gamma,FRR_AECc_EC_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (AECc, Gamma band)');
 
-% AECc metric
-figure();
-plot(FAR_AECc_EO_gamma,FRR_AECc_EO_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (AECc, Gamma band)');
+    figure();
+    imagesc(EER_AECc_gamma)
+    title('EER matrix (AECc, Gamma band)');
 
-figure();
-plot(FAR_AECc_EC_gamma,FRR_AECc_EC_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (AECc, Gamma band)');
+    % COH metric
+    figure();
+    plot(FAR_COH_EO_gamma,FRR_COH_EO_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (COH, Gamma band)');
 
-figure();
-imagesc(EER_AECc_gamma)
-title('EER matrix (AECc, Gamma band)');
+    figure();
+    area(FAR_COH_EC_gamma,FRR_COH_EC_gamma)
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (COH, Gamma band)');
 
-% COH metric
-figure();
-plot(FAR_COH_EO_gamma,FRR_COH_EO_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Open (COH, Gamma band)');
+    figure();
+    imagesc(EER_COH_theta)
+    title('EER matrix (COH, Theta band)');
 
-figure();
-%plot(FAR_COH_EC_gamma,FRR_COH_EC_gamma)
-area(FAR_COH_EC_gamma,FRR_COH_EC_gamma)
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (COH, Gamma band)');
+    %% -- Extra plotting of results. --
+    figure();
+    plot(FAR_PLI_EC_delta,FRR_PLI_EC_delta);
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Closed (PLI)');
+    hold on;
+    plot(FAR_PLI_EC_theta,FRR_PLI_EC_theta);
+    plot(FAR_PLI_EC_alpha,FRR_PLI_EC_alpha);
+    plot(FAR_PLI_EC_beta,FRR_PLI_EC_beta);
+    plot(FAR_PLI_EC_gamma,FRR_PLI_EC_gamma);
+    legend('delta','theta','alpha','beta','gamma');
 
-figure();
-imagesc(EER_COH_theta)
-title('EER matrix (COH, Theta band)');
+    figure();
+    plot(FAR_PLI_EO_delta,FRR_PLI_EO_delta);
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Eyes Open (PLI)');
+    hold on;
+    plot(FAR_PLI_EO_theta,FRR_PLI_EO_theta);
+    plot(FAR_PLI_EO_alpha,FRR_PLI_EO_alpha);
+    plot(FAR_PLI_EO_beta,FRR_PLI_EO_beta);
+    plot(FAR_PLI_EO_gamma,FRR_PLI_EO_gamma);
+    legend('delta','theta','alpha','beta','gamma');
 
-%% -- Extra plotting of results. --
+    figure();
+    plot(FAR_AECc_BT_delta,FRR_AECc_BT_delta);
+    xlabel('False acceptance rate');
+    ylabel('False rejection rate');
+    title('ROC curve - Between Tasks (AECc)');
+    hold on;
+    plot(FAR_AECc_BT_theta,FRR_AECc_BT_theta);
+    plot(FAR_AECc_BT_alpha,FRR_AECc_BT_alpha);
+    plot(FAR_AECc_BT_beta,FRR_AECc_BT_beta);
+    plot(FAR_AECc_BT_gamma,FRR_AECc_BT_gamma);
+    legend('delta','theta','alpha','beta','gamma');
 
-% Koino plot ROC curve gia oles tis zwnes syxnothtwn.
-figure();
-plot(FAR_PLI_EC_delta,FRR_PLI_EC_delta);
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (PLI)');
-hold on;
-plot(FAR_PLI_EC_theta,FRR_PLI_EC_theta);
-plot(FAR_PLI_EC_alpha,FRR_PLI_EC_alpha);
-plot(FAR_PLI_EC_beta,FRR_PLI_EC_beta);
-plot(FAR_PLI_EC_gamma,FRR_PLI_EC_gamma);
-legend('delta','theta','alpha','beta','gamma');
+    [GenuineScore1,GenuineScore2,GenuineScore3,ImpostorScore1,ImpostorScore2,ImpostorScore3] = Genuine_Impostor_Scores(ScoreMat_PLV_alpha,T,Ns,epoch);
+    [FAR,FRR,thres] = Calculate_FAR_FRR(GenuineScore1,ImpostorScore1);
 
+    figure(21);
+    plot(thres,FAR);
+    area(thres,FAR);
+    xlabel('threshold')
+    hold on;
+    plot(thres,FRR);
+    area(thres,FRR);
+    legend('FAR','FRR');
+    title('FAR - FRR');
 
-figure();
-plot(FAR_PLI_EO_delta,FRR_PLI_EO_delta);
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Eyes Closed (PLI)');
-hold on;
-plot(FAR_PLI_EO_theta,FRR_PLI_EO_theta);
-plot(FAR_PLI_EO_alpha,FRR_PLI_EO_alpha);
-plot(FAR_PLI_EO_beta,FRR_PLI_EO_beta);
-plot(FAR_PLI_EO_gamma,FRR_PLI_EO_gamma);
-legend('delta','theta','alpha','beta','gamma');
+    %% -- Plot all EER matrices together. --
+    figure()
 
-%%
-figure();
-plot(FAR_AECc_BT_delta,FRR_AECc_BT_delta);
-xlabel('False acceptance rate'); 
-ylabel('False rejection rate');
-title('ROC curve - Between Tasks (AECc)');
-hold on;
-plot(FAR_AECc_BT_theta,FRR_AECc_BT_theta);
-plot(FAR_AECc_BT_alpha,FRR_AECc_BT_alpha);
-plot(FAR_AECc_BT_beta,FRR_AECc_BT_beta);
-plot(FAR_AECc_BT_gamma,FRR_AECc_BT_gamma);
-legend('delta','theta','alpha','beta','gamma');
+    % Delta band
+    subplot(5,7,1);
+    imagesc(EER_PLV_delta);
+    subplot(5,7,2);
+    imagesc(EER_PLI_delta);
+    subplot(5,7,3);
+    imagesc(EER_COR_delta);
+    subplot(5,7,4);
+    imagesc(EER_AEC_delta);
+    subplot(5,7,5);
+    imagesc(EER_AECc_delta);
+    subplot(5,7,6);
+    imagesc(EER_COH_delta);
 
-%% -- Extra plotting of results. --
+    % Theta band
+    subplot(5,7,8);
+    imagesc(EER_PLV_theta);
+    subplot(5,7,9);
+    imagesc(EER_PLI_theta);
+    subplot(5,7,10);
+    imagesc(EER_COR_theta);
+    subplot(5,7,11);
+    imagesc(EER_AEC_theta);
+    subplot(5,7,12);
+    imagesc(EER_AECc_theta);
+    subplot(5,7,13);
+    imagesc(EER_COH_theta);
 
-% Edw kanw plot twn FAR kai FRR synarthsei tou threshold.
+    % Alpha band
+    subplot(5,7,15);
+    imagesc(EER_PLV_alpha);
+    subplot(5,7,16);
+    imagesc(EER_PLI_alpha);
+    subplot(5,7,17);
+    imagesc(EER_COR_alpha);
+    subplot(5,7,18);
+    imagesc(EER_AEC_alpha);
+    subplot(5,7,19);
+    imagesc(EER_AECc_alpha);
+    subplot(5,7,20);
+    imagesc(EER_COH_alpha);
 
-[GenuineScore1,GenuineScore2,GenuineScore3,ImpostorScore1,ImpostorScore2,ImpostorScore3] = Genuine_Impostor_Scores(ScoreMat_PLV_alpha,T,Ns,epoch) ;
-[FAR,FRR,thres] = Calculate_FAR_FRR(GenuineScore1,ImpostorScore1); %  Task1 vs Task1
+    % Beta band
+    subplot(5,7,22);
+    imagesc(EER_PLV_beta);
+    subplot(5,7,23);
+    imagesc(EER_PLI_beta);
+    subplot(5,7,24);
+    imagesc(EER_COR_beta);
+    subplot(5,7,25);
+    imagesc(EER_AEC_beta);
+    subplot(5,7,26);
+    imagesc(EER_AECc_beta);
+    subplot(5,7,27);
+    imagesc(EER_COH_beta);
 
-figure(21);
-plot(thres,FAR);
-area(thres,FAR);
-xlabel('threshold')
-hold on;
-plot(thres,FRR);
-area(thres,FRR);
-legend('FAR','FRR');
-title('FAR - FRR');
+    % Gamma band
+    subplot(5,7,29);
+    imagesc(EER_PLV_gamma);
+    subplot(5,7,30);
+    imagesc(EER_PLI_gamma);
+    subplot(5,7,31);
+    imagesc(EER_COR_gamma);
+    subplot(5,7,32);
+    imagesc(EER_AEC_gamma);
+    subplot(5,7,33);
+    imagesc(EER_AECc_gamma);
+    subplot(5,7,34);
+    imagesc(EER_COH_gamma);
 
-%% -- Plot all EER matrices together. --
-figure()
-
-% Delta band
-subplot(5,7,1);
-imagesc(EER_PLV_delta);
-subplot(5,7,2);
-imagesc(EER_PLI_delta);
-subplot(5,7,3);
-imagesc(EER_COR_delta);
-subplot(5,7,4);
-imagesc(EER_AEC_delta);
-subplot(5,7,5);
-imagesc(EER_AECc_delta);
-subplot(5,7,6);
-imagesc(EER_COH_delta);
-
-% Theta band
-subplot(5,7,8);
-imagesc(EER_PLV_theta);
-subplot(5,7,9);
-imagesc(EER_PLI_theta);
-subplot(5,7,10);
-imagesc(EER_COR_theta);
-subplot(5,7,11);
-imagesc(EER_AEC_theta);
-subplot(5,7,12);
-imagesc(EER_AECc_theta);
-subplot(5,7,13);
-imagesc(EER_COH_theta);
-
-% Alpha band
-subplot(5,7,15);
-imagesc(EER_PLV_alpha);
-subplot(5,7,16);
-imagesc(EER_PLI_alpha);
-subplot(5,7,17);
-imagesc(EER_COR_alpha);
-subplot(5,7,18);
-imagesc(EER_AEC_alpha);
-subplot(5,7,19);
-imagesc(EER_AECc_alpha);
-subplot(5,7,20);
-imagesc(EER_COH_alpha);
-
-% Beta band
-subplot(5,7,22);
-imagesc(EER_PLV_beta);
-subplot(5,7,23);
-imagesc(EER_PLI_beta);
-subplot(5,7,24);
-imagesc(EER_COR_beta);
-subplot(5,7,25);
-imagesc(EER_AEC_beta);
-subplot(5,7,26);
-imagesc(EER_AECc_beta);
-subplot(5,7,27);
-imagesc(EER_COH_beta);
-
-% Gamma band
-subplot(5,7,29);
-imagesc(EER_PLV_gamma);
-subplot(5,7,30);
-imagesc(EER_PLI_gamma);
-subplot(5,7,31);
-imagesc(EER_COR_gamma);
-subplot(5,7,32);
-imagesc(EER_AEC_gamma);
-subplot(5,7,33);
-imagesc(EER_AECc_gamma);
-subplot(5,7,34);
-imagesc(EER_COH_gamma);
-
-% define colorbar
-cbax = axes('visible', 'off');
-caxis(cbax, [0, 0.6]); % vazw oria apo to 0 ews ligo panw apo to megisto EER, symfwna me tis times pou exw.
-colorbar(cbax, 'Location', 'eastoutside'); 
+    % Define colorbar.
+    cbax = axes('visible', 'off');
+    caxis(cbax, [0, 0.6]);
+    colorbar(cbax, 'Location', 'eastoutside');
+end

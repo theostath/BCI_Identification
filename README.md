@@ -1,104 +1,187 @@
-# BCI_Identification
+# BCI Identification with EEG Baseline Recordings
 
-Biometric identification using BCI systems
+This repository contains the MATLAB implementation used for an undergraduate thesis at the University of Patras on biometric identification with EEG-based brain-computer interface data.
 
-This is a repository about my undergraduate thesis (University of Patras, Electrical and Computer Engineering).
+The pipeline uses resting-state baseline EEG recordings from PhysioNet and follows four main stages:
 
-You can find the pdf of the thesis here: https://nemertes.lis.upatras.gr/jspui/handle/10889/14472
+1. Data loading from EDF files
+2. Preprocessing with Common Average Referencing (CAR) and bandpass filtering
+3. Functional connectivity feature extraction
+4. Score-based biometric evaluation with ROC and EER analysis
 
-The general structure of the code is the following:
-1) Data Collection (EEG)
-2) Preprocessing (spatial filtering - CAR - / frequency filtering - bandpass -)
-3) Feature Extraction (compute various functional connectivity metrics)
-4) Classification (compute a score via Euclidean distance, define a threshold vector for decision making and find EER matrix)
+Thesis reference: https://nemertes.lis.upatras.gr/jspui/handle/10889/14472
 
+## Dataset
 
-## Data
+This project uses the EEG Motor Movement/Imagery Dataset from PhysioNet:
 
-To download the data, go here: https://physionet.org/content/eegmmidb/1.0.0/
+- Dataset overview: https://physionet.org/content/eegmmidb/1.0.0/
+- Access/download page: https://physionet.org/content/eegmmidb/1.0.0/S106/
 
-You want the data from every subject (S001-S109), and the first two runs (R01 = baseline run eyes open and R02 = baseline run eyes closed).
+The code in this repository uses only the two baseline runs for each subject:
 
-Once the zip file is downloaded, you unzip it and put these files (only .edf, not .edf.event) in the same directory as the code, so you can read them properly.
+- `R01`: baseline, eyes open
+- `R02`: baseline, eyes closed
+
+For the full experiment, you need baseline EDF files for all subjects:
+
+- `S001R01.edf` to `S109R01.edf`
+- `S001R02.edf` to `S109R02.edf`
+
+Only the `.edf` files are required. The `.edf.event` files are not used by this code.
 
 ## Prerequisites
 
-To run this code you need Matlab 2017b version, or a newer one.
+- MATLAB R2017b or newer
+- Signal Processing Toolbox
 
-## Code
+The code uses MATLAB signal-processing functions such as `hilbert` and `mscohere`, so the toolbox requirement is important.
 
-The code is written in Matlab and is in the "code" directory. In the main_programm.m you will find everything you need with explanatory commenting.
+## Repository Layout
 
-Some information about the functions that are beeing used:
+- `README.md`
+- `code/main_program.m`: main entry point
+- `code/import_eeg_data.m`: EDF loading and validation
+- `code/ConnectivityMatrix.m`: connectivity metrics
+- `code/FeatureVector.m`: upper-triangular feature extraction
+- `code/CalcScoreMatrix.m`: similarity scoring with Euclidean distance
+- `code/EERMatrix.m`: EER, FAR, FRR, and AUC computation
 
->import_eeg_data.m : Convert .edf (European Data Format) files to matrices.    [edfread.m]
+## Configuration
 
->CAR.m : Apply CAR (Common Average Referencing) filter (spatial filter) to the raw EEG (ElectroEncephaloGraphy) data.
+The main script includes a configuration block near the top of `code/main_program.m`:
 
->eegfilt.m : Apply bandpass filter to seperate EEG data into specific bands.
+- `data_dir`: directory that contains the EDF files
+- `Ns`: number of subjects to process
+- `epoch`: non-overlapping epoch length in seconds
+- `use_car`: enable or disable CAR preprocessing
+- `enable_plots`: enable or disable plotting
+- `enable_optional_distribution_plot`: optionally use `PlotDistributionOfGenuineImpScores.m` if you add that helper yourself
 
-Bands:
-delta band = [1-4 Hz], theta band = [4-8 Hz], alpha band = [8-13 Hz], beta band = [13-30 Hz], gamma band = [30-45 Hz]
+By default, `data_dir` points to the `code` directory, so the easiest setup is to place the EDF files there.
 
-In line 75 of main_programm.m you can choose a flag  = 0 if you want to apply this process in the spatial filtered data (CAR), or choose a flag = 1 if you want to apply this process in the raw EEG data.
+## Quick Smoke Test
 
->ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.    [orthogonalization.m]
+Use this path first before attempting the full 109-subject run.
 
-Functional Connectivity (FC) Metrics:
-1) PLV (Phase Locking Value)
-2) PLI (Phase Lag Index)
-3) COR (Pearson's Correlation Coefficient)
-4) AEC (Amplitude Envelope Correlation)
-5) AECc (AEC corrected version)
-6) COH (Spectral Coherence)
+1. Download these files from PhysioNet:
+   - `S001R01.edf`
+   - `S001R02.edf`
+   - `S002R01.edf`
+   - `S002R02.edf`
+   - `S003R01.edf`
+   - `S003R02.edf`
+2. Place them in `BCI_Identification/code`, or another folder and update `data_dir`.
+3. Open `code/main_program.m`.
+4. Set:
+   - `Ns = 3`
+   - `enable_plots = true` or `false`, depending on whether you want figures
+5. Run the script from MATLAB.
 
->FeatureVector.m : Extract feature vectors from the upper triangular connectivity matrix
+## Full Experiment
 
->CalcScoreMatrix.m : Calculate score matrix for each FC metric using the Euclidean distance.
+For the full experiment:
 
->EERMatrix.m : Calculate EER (Equal Error Rate) matrix for each metric in each band. This function, also, returns the FAR (False Accept Rate) and FRR (False Rejection Rate) for each metric and each band.    [Genuine_Impostor_Scores.m and Calculate_FAR_FRR.m]
+1. Download `R01` and `R02` EDF files for all subjects `S001` through `S109`.
+2. Place them in the configured `data_dir`.
+3. Set `Ns = 109` in `code/main_program.m`.
+4. Run the script.
 
-EER is the point of the ROC (Receiver Operating Characteristic) curve where FAR == FRR.
+The full run is computationally expensive. It computes multiple connectivity metrics across five frequency bands, five epochs per subject, and two baseline tasks. Start with the smoke test unless you already know the full dataset is available and the runtime is acceptable on your machine.
 
-From line 676 and below there are some prints to see the results.
+## How to Run Locally
 
-## Examples (Images)
+In MATLAB:
 
-1) Raw EEG data from all 64 channels from subject 1 during the baseline run with eyes open. The duration here is 12 seconds.
+1. Open the repository.
+2. Open `code/main_program.m`.
+3. Confirm that `data_dir` points to the folder that contains the EDF files.
+4. Adjust `Ns` for either the smoke test or the full run.
+5. Press Run, or execute:
 
-![image](https://user-images.githubusercontent.com/24894934/113600967-6c60e300-9649-11eb-93a7-73ab7ed388b6.png)
+```matlab
+run('code/main_program.m')
+```
 
-2) Zoom in to see the data from 1 channel.
+If you prefer, you can also change MATLAB's current folder to `code` and run:
 
-![image](https://user-images.githubusercontent.com/24894934/113601150-a3cf8f80-9649-11eb-9744-c215f09685be.png)
+```matlab
+main_program
+```
 
-3) After preprocessing, you can see the same data filtered in delta band [1-4 Hz].
+## Output
 
-![image](https://user-images.githubusercontent.com/24894934/113601263-c5307b80-9649-11eb-91bf-1739200fb92d.png)
+The script computes:
 
-4) Functional connectivity matrix for the PLV metric. It is from subject 1, in alpha band, during the baseline run with eyes closed.
+- Functional connectivity matrices
+- Feature vectors
+- Similarity score matrices
+- FAR and FRR curves
+- EER matrices
+- AUC values
 
-![image](https://user-images.githubusercontent.com/24894934/113601365-e5603a80-9649-11eb-9d20-2f8ce0a3be59.png)
+If `enable_plots` is set to `true`, the script also produces a large number of figures for inspection.
 
-5) Extracting the feature vector from the upper triangular matrix of the last photo.
+## Functional Connectivity Metrics
 
-![image](https://user-images.githubusercontent.com/24894934/113601501-16d90600-964a-11eb-8e51-375016add299.png)
+The implementation evaluates the following metrics:
 
-6) Score matrix for PLV metric in alpha band. This includes scores for 5 epochs, 109 subjects and 2 tasks (eyes open, eyes closed).
+1. PLV: Phase Locking Value
+2. PLI: Phase Lag Index
+3. COR: Pearson correlation coefficient
+4. AEC: Amplitude Envelope Correlation
+5. AECc: corrected AEC
+6. COH: Spectral coherence
 
-![image](https://user-images.githubusercontent.com/24894934/113601575-2fe1b700-964a-11eb-9b8d-31b5ee82119e.png)
+The analysis is repeated for five EEG frequency bands:
 
-7) Example of FAR and FRR values depending on the threshold value.
+- Delta: `1-4 Hz`
+- Theta: `4-8 Hz`
+- Alpha: `8-13 Hz`
+- Beta: `13-30 Hz`
+- Gamma: `30-45 Hz`
 
-![image](https://user-images.githubusercontent.com/24894934/113601715-5e5f9200-964a-11eb-84f0-6781a0fbb2d8.png)
+## Notes
 
-8) Example of a ROC curve.
+- `main_program.m` is the correct entry-point filename.
+- `import_eeg_data.m` now validates missing files and reports which EDF path is missing.
+- `CalcScoreMatrix.m` uses Euclidean distance for scoring.
+- The optional distribution plot helper is not included in this repository. If you do not have that file, keep `enable_optional_distribution_plot = false`.
 
-![image](https://user-images.githubusercontent.com/24894934/113601794-759e7f80-964a-11eb-8144-68fff6a95586.png)
+## Example Figures
 
-9) Finally, example of an EER matrix. The value 0 is the best for EER.
+1. Raw EEG data from all 64 channels from subject 1 during the baseline run with eyes open
 
-![image](https://user-images.githubusercontent.com/24894934/113601824-83ec9b80-964a-11eb-9af3-40281636081b.png)
+![Raw EEG](https://user-images.githubusercontent.com/24894934/113600967-6c60e300-9649-11eb-93a7-73ab7ed388b6.png)
 
+2. Zoomed view of one channel
 
+![Single channel](https://user-images.githubusercontent.com/24894934/113601150-a3cf8f80-9649-11eb-9744-c215f09685be.png)
 
+3. Delta-band EEG after preprocessing
+
+![Delta band](https://user-images.githubusercontent.com/24894934/113601263-c5307b80-9649-11eb-91bf-1739200fb92d.png)
+
+4. Functional connectivity matrix example
+
+![Connectivity matrix](https://user-images.githubusercontent.com/24894934/113601365-e5603a80-9649-11eb-9d20-2f8ce0a3be59.png)
+
+5. Feature vector example
+
+![Feature vector](https://user-images.githubusercontent.com/24894934/113601501-16d90600-964a-11eb-8e51-375016add299.png)
+
+6. Score matrix example
+
+![Score matrix](https://user-images.githubusercontent.com/24894934/113601575-2fe1b700-964a-11eb-9b8d-31b5ee82119e.png)
+
+7. FAR and FRR example
+
+![FAR/FRR](https://user-images.githubusercontent.com/24894934/113601715-5e5f9200-964a-11eb-84f0-6781a0fbb2d8.png)
+
+8. ROC curve example
+
+![ROC curve](https://user-images.githubusercontent.com/24894934/113601794-759e7f80-964a-11eb-8144-68fff6a95586.png)
+
+9. EER matrix example
+
+![EER matrix](https://user-images.githubusercontent.com/24894934/113601824-83ec9b80-964a-11eb-9af3-40281636081b.png)
