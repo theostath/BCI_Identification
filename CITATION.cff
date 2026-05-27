@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software or refer to this work, please cite the thesis below."
+title: "Biometric identification using BCI systems"
+abstract: >-
+  MATLAB implementation of an EEG-based biometric identification system that
+  recognizes individuals from functional-connectivity patterns (PLV, PLI, COR,
+  AEC, AECc, COH) across five frequency bands, evaluated with Equal Error Rate.
+type: software
+authors:
+  - family-names: Stathakopoulos
+    given-names: "Theodoros-Panagiotis"
+    affiliation: "University of Patras, Department of Electrical and Computer Engineering"
+license: MIT
+repository-code: "https://github.com/theostath/BCI_Identification"
+url: "https://nemertes.lis.upatras.gr/jspui/handle/10889/14472"
+keywords:
+  - EEG
+  - biometrics
+  - brain-computer interface
+  - functional connectivity
+  - equal error rate
+references:
+  - type: thesis
+    title: "Biometric identification using BCI systems"
+    thesis-type: "Bachelor's thesis"
+    authors:
+      - family-names: Stathakopoulos
+        given-names: "Theodoros-Panagiotis"
+    institution:
+      name: "University of Patras, Department of Electrical and Computer Engineering"
+    year: 2021
+    url: "https://nemertes.lis.upatras.gr/jspui/handle/10889/14472"
