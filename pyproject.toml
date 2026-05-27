@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bci-identification"
+version = "0.1.0"
+description = "EEG functional-connectivity biometric identification (Python port)"
+readme = "README-python.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "theostath" }]
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.9",
+    "mne>=1.5",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.6"]
+dev = ["pytest>=7", "matplotlib>=3.6"]
+
+[project.scripts]
+bci-identify = "bci_identification.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
