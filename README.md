@@ -1,6 +1,10 @@
 # BCI_Identification
 
-Biometric identification using BCI systems
+![MATLAB](https://img.shields.io/badge/MATLAB-R2017b%2B-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/status-research--prototype-blue)
+
+Biometric identification using BCI systems.
 
 This is a repository about my undergraduate thesis (University of Patras, Electrical and Computer Engineering).
 
@@ -12,6 +16,13 @@ The general structure of the code is the following:
 3) Feature Extraction (compute various functional connectivity metrics)
 4) Classification (compute a score via Euclidean distance, define a threshold vector for decision making and find EER matrix)
 
+## Contents
+
+- [Data](#data)
+- [Prerequisites](#prerequisites)
+- [Code](#code)
+- [Project layout](#project-layout)
+- [Examples (Images)](#examples-images)
 
 ## Data
 
@@ -27,7 +38,7 @@ To run this code you need Matlab 2017b version, or a newer one.
 
 ## Code
 
-The code is written in Matlab and is in the "code" directory. In the main_programm.m you will find everything you need with explanatory commenting.
+The code is written in Matlab and is in the "code" directory. In the main_program.m you will find everything you need with explanatory commenting.
 
 Some information about the functions that are beeing used:
 
@@ -40,7 +51,7 @@ Some information about the functions that are beeing used:
 Bands:
 delta band = [1-4 Hz], theta band = [4-8 Hz], alpha band = [8-13 Hz], beta band = [13-30 Hz], gamma band = [30-45 Hz]
 
-In line 75 of main_programm.m you can choose a flag  = 0 if you want to apply this process in the spatial filtered data (CAR), or choose a flag = 1 if you want to apply this process in the raw EEG data.
+In line 75 of main_program.m you can choose a flag  = 0 if you want to apply this process in the spatial filtered data (CAR), or choose a flag = 1 if you want to apply this process in the raw EEG data.
 
 >ConnectivityMatrix.m : Compute connectivity matrix for each subject, each epoch and each frequency band.    [orthogonalization.m]
 
@@ -62,43 +73,67 @@ EER is the point of the ROC (Receiver Operating Characteristic) curve where FAR 
 
 From line 676 and below there are some prints to see the results.
 
+## Project layout
+
+```
+BCI_Identification/
+├── code/
+│   ├── main_program.m         Entry point: runs the full pipeline (cell-by-cell)
+│   ├── import_eeg_data.m      Read .edf recordings into matrices
+│   ├── edfread.m              European Data Format reader (helper)
+│   ├── CAR.m                  Common Average Referencing (spatial filter)
+│   ├── eegfilt.m              FIR bandpass filter (helper)
+│   ├── eegplot.m              Multi-channel EEG viewer (helper)
+│   ├── ConnectivityMatrix.m   Functional connectivity matrix per metric/band
+│   ├── orthogonalization.m    Signal-leakage correction (used by AECc)
+│   ├── FeatureVector.m        Upper-triangle of a matrix -> feature vector
+│   ├── CalcScoreMatrix.m      Similarity scores via Euclidean distance
+│   ├── EERMatrix.m            Equal Error Rate / AUC per metric and band
+│   ├── Genuine_Impostor_Scores.m   Split scores into genuine vs impostor
+│   └── Calculate_FAR_FRR.m    Sweep threshold -> FAR / FRR
+├── docs/images/               README example figures
+├── CITATION.cff               How to cite this work
+├── LICENSE                    MIT
+└── README.md
+```
+
 ## Examples (Images)
 
 1) Raw EEG data from all 64 channels from subject 1 during the baseline run with eyes open. The duration here is 12 seconds.
 
-![image](https://user-images.githubusercontent.com/24894934/113600967-6c60e300-9649-11eb-93a7-73ab7ed388b6.png)
+![Raw EEG data from all 64 channels](docs/images/01-raw-eeg-all-channels.png)
 
 2) Zoom in to see the data from 1 channel.
 
-![image](https://user-images.githubusercontent.com/24894934/113601150-a3cf8f80-9649-11eb-9744-c215f09685be.png)
+![Zoom in to a single channel](docs/images/02-raw-eeg-single-channel.png)
 
 3) After preprocessing, you can see the same data filtered in delta band [1-4 Hz].
 
-![image](https://user-images.githubusercontent.com/24894934/113601263-c5307b80-9649-11eb-91bf-1739200fb92d.png)
+![Same data filtered in the delta band](docs/images/03-filtered-delta-band.png)
 
 4) Functional connectivity matrix for the PLV metric. It is from subject 1, in alpha band, during the baseline run with eyes closed.
 
-![image](https://user-images.githubusercontent.com/24894934/113601365-e5603a80-9649-11eb-9d20-2f8ce0a3be59.png)
+![PLV functional connectivity matrix](docs/images/04-connectivity-matrix-plv-alpha.png)
 
 5) Extracting the feature vector from the upper triangular matrix of the last photo.
 
-![image](https://user-images.githubusercontent.com/24894934/113601501-16d90600-964a-11eb-8e51-375016add299.png)
+![Feature vector from the upper triangular matrix](docs/images/05-feature-vector-plv-alpha.png)
 
 6) Score matrix for PLV metric in alpha band. This includes scores for 5 epochs, 109 subjects and 2 tasks (eyes open, eyes closed).
 
-![image](https://user-images.githubusercontent.com/24894934/113601575-2fe1b700-964a-11eb-9b8d-31b5ee82119e.png)
+![Score matrix for PLV in the alpha band](docs/images/06-score-matrix-plv-alpha.png)
 
 7) Example of FAR and FRR values depending on the threshold value.
 
-![image](https://user-images.githubusercontent.com/24894934/113601715-5e5f9200-964a-11eb-84f0-6781a0fbb2d8.png)
+![FAR and FRR versus threshold](docs/images/07-far-frr-vs-threshold.png)
 
 8) Example of a ROC curve.
 
-![image](https://user-images.githubusercontent.com/24894934/113601794-759e7f80-964a-11eb-8144-68fff6a95586.png)
+![Example ROC curve](docs/images/08-roc-curve.png)
 
 9) Finally, example of an EER matrix. The value 0 is the best for EER.
 
-![image](https://user-images.githubusercontent.com/24894934/113601824-83ec9b80-964a-11eb-9af3-40281636081b.png)
+![Example EER matrix](docs/images/09-eer-matrix.png)
 
 
 

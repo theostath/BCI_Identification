@@ -1,0 +1,27 @@
+# --- MATLAB artifacts ---
+*.asv
+*.m~
+*.autosave
+*.mat
+*.mex*
+*.mlx.bak
+slprj/
+octave-core
+octave-workspace
+
+# --- EEG data (download separately from PhysioNet eegmmidb) ---
+*.edf
+*.edf.event
+
+# --- OS / editor / IDE ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# --- Agent / scratch files (kept local, not committed) ---
+CLAUDE.md
+.issue-body.md
+.pr-body.md
